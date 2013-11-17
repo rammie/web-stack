@@ -56,6 +56,23 @@ def module(ctx, module, configure="", numthreads=4, **kwargs):
 
 
 @conf
+def build_gevent(ctx, target):
+    srcpath = ctx.env.SRCPATH
+    module = "gevent-0.13.8"
+    ctx.venv_exec("""
+        base="%(module)s"
+        pushd %(srcpath)s/3rdparty/site-packages
+        rm -fr "$base"
+        tar xzf "$base.tar.gz"
+        pushd "$base"
+        python setup.py install -I"$VIRTUAL_ENV/include" -L"$VIRTUAL_ENV/lib"
+        popd
+        rm -fr "$base"
+        popd
+    """ % locals())
+
+
+@conf
 def build_freetype2(ctx, target):
     srcscript = ctx.module_builder("freetype-2.1.10")
     ctx.venv_exec(srcscript)

@@ -24,6 +24,7 @@ def build(ctx):
         "pkg-config-0.27.1", "--disable-debug --with-internal-glib",
         source="../bin/activate", target="../bin/pkg-config")
     ctx.module("libpng-1.5.13", source="../bin/pkg-config", target="../bin/libpng-config")
+    ctx.module("libevent-2.0.21-stable", source="../bin/pkg-config", target="../lib/libevent.a")
     ctx.module("zeromq-3.2.2", source="../bin/pkg-config", target="../lib/libzmq.a")
 
     ctx(rule=ctx.build_postgresql, source="../bin/pkg-config", target="../bin/postmaster")
@@ -54,6 +55,10 @@ def build(ctx):
     ctx(rule=ctx.venv("pip install numpy==1.6.2 --no-index -f file://%s" % pkg),
         source=platform_deps, target=numpy)
 
+    # Install gevent separately due to include path issues.
+    gevent = os.path.join(site_packages, "gevent", ".done")
+    ctx(rule=ctx.build_gevent, source="../lib/libevent.a", target=gevent)
+
     # Install cvxopt separately due to misplaced setup.py file.
     cvxopt = os.path.join(site_packages, "cvxopt", "__init__.py")
     ctx(rule=ctx.build_cvxopt, source=numpy, target=cvxopt)
@@ -71,10 +76,11 @@ def build(ctx):
     ctx(
         rule=ctx.venv("pip install --no-index -f file://%s -r %s && touch ${TGT}" % (pkg, reqs)),
         source=platform_deps + [
+            gevent,
             numpy,
-            # "../bin/qmake",
             "../.mathjax-done",
             "../bin/ipython",
+            "../lib/libevent.a",
             "../bin/libpng-config",
             "../lib/libzmq.a",
             "../bin/postmaster",
