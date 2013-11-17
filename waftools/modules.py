@@ -9,7 +9,6 @@ from waflib.Configure import conf
 
 @conf
 def template_renderer(ctx, srcpath, dstpath, format=True, executable=False):
-    print format
     kwargs = {"VIRTUAL_ENV": ctx.out_dir}
     kwargs.update(os.environ)
     dstpath = os.path.join(ctx.out_dir, dstpath)
